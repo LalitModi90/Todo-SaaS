@@ -57,9 +57,23 @@ export default function LoginPage() {
   // ── Handlers ──
   const handleGuestLogin = () => loginAsGuest();
 
-  const handleGoogleClick = () => {
+  const handleGoogleClick = async () => {
+    setError('');
+    setInfo('Waking up backend server... Connecting to Google (~20-40s on Render free tier)');
+    setLoading(true);
+
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://todo-saas.onrender.com/api';
     const backendBase = apiUrl.replace(/\/api\/?$/, '');
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+      await fetch(backendBase, { mode: 'no-cors', signal: controller.signal }).catch(() => {});
+      clearTimeout(timeoutId);
+    } catch (e) {
+      // Proceed even if ping times out
+    }
+
     window.location.href = `${backendBase}/auth/google`;
   };
 
@@ -273,9 +287,9 @@ export default function LoginPage() {
               Continue as Guest
             </button>
 
-            <button type="button" className="btn-pill-outline" onClick={handleGoogleClick}>
+            <button type="button" className="btn-pill-outline" onClick={handleGoogleClick} disabled={loading}>
               <span style={{ fontWeight: 700, fontSize: '1.125rem', fontFamily: 'sans-serif' }}>G</span>
-              <span>Login with Google</span>
+              <span>{loading ? 'Connecting...' : 'Login with Google'}</span>
             </button>
 
             <button type="button" onClick={() => setShowEmailLogin(true)} style={{ background: 'transparent', border: 'none', color: '#71717a', cursor: 'pointer', fontSize: '0.75rem', marginTop: '4px' }}>
