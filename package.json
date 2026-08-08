@@ -1,0 +1,17 @@
+{
+  "name": "todo-saas-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pyramid MERN Todo-SaaS Platform Root Package",
+  "scripts": {
+    "install:all": "npm --prefix server install && npm --prefix client install",
+    "build:server": "cd server && npm install",
+    "build:client": "cd client && npm install && npm run build",
+    "start:server": "cd server && npm start",
+    "start:client": "cd client && npm start"
+  },
+  "workspaces": [
+    "client",
+    "server"
+  ]
+}
