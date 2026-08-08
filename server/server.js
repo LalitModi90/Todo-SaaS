@@ -118,9 +118,8 @@ const startServer = async () => {
 
   try {
     await connectDB();
-    await seedInitialData();
   } catch (err) {
-    console.error('Database connection / seed error:', err.message);
+    console.error('Database connection error:', err.message);
   }
 };
 
