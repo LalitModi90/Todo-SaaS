@@ -2,9 +2,9 @@
   "name": "todo-saas-monorepo",
   "version": "1.0.0",
   "private": true,
-  "main": "server/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node server/server.js",
+    "start": "node server.js",
     "install:all": "npm --prefix server install && npm --prefix client install",
     "build:server": "cd server && npm install",
     "build:client": "cd client && npm install && npm run build",
