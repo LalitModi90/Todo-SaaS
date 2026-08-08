@@ -74,6 +74,11 @@ app.use('/api/auth/send-otp', authLimiter);
 app.use('/api/auth/verify-otp', authLimiter);
 app.use('/api/', apiLimiter);
 
+// Health check & root route
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'Todo SaaS API is running' });
+});
+
 // Routes
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
