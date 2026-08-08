@@ -58,7 +58,9 @@ export default function LoginPage() {
   const handleGuestLogin = () => loginAsGuest();
 
   const handleGoogleClick = () => {
-    window.location.href = 'http://localhost:4000/auth/google';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://todo-saas.onrender.com/api';
+    const backendBase = apiUrl.replace(/\/api\/?$/, '');
+    window.location.href = `${backendBase}/auth/google`;
   };
 
   const handlePasswordLogin = async (e) => {
