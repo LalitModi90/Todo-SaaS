@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 
 const connectDB = async () => {
-  const mongoUri = process.env.MONGOOS_URL || process.env.MONGODB_URI;
+  const mongoUri = process.env.MONGOOS_URL || process.env.MONGODB_URI || 'mongodb+srv://2303051050394_db_user:PpEbit6JBV8bffQC@cluster0.kqfbkkt.mongodb.net/TODOSass';
 
   if (mongoUri) {
     try {
@@ -14,10 +14,7 @@ const connectDB = async () => {
       return;
     } catch (err) {
       console.warn('MongoDB Atlas connection failed:', err.message);
-      console.log('Falling back to In-Memory MongoDB for seamless operation...');
     }
-  } else {
-    console.log('No MONGOOS_URL found in environment variables. Starting In-Memory MongoDB...');
   }
 
   try {
