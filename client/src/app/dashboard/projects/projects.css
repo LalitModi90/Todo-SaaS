@@ -1,0 +1,11 @@
+.projects-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.projects-content {
+  padding: 24px 32px;
+  flex: 1;
+  overflow-y: auto;
+}

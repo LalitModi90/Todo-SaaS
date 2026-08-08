@@ -1,0 +1,96 @@
+.top-navbar {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
+  flex-shrink: 0;
+  width: 100%;
+  padding: 0 24px;
+  background-color: var(--bg-card, #ffffff);
+  border-bottom: 1px solid var(--border-color, #e4e4e7);
+  box-sizing: border-box;
+  z-index: 50;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary, #71717a);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.sidebar-toggle:hover {
+  background-color: var(--bg-hover, #f4f4f5);
+  color: var(--text-primary, #09090b);
+}
+
+.navbar-divider {
+  width: 1px;
+  height: 16px;
+  background-color: var(--border-color, #e4e4e7);
+  margin: 0 12px;
+  flex-shrink: 0;
+}
+
+.navbar-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  user-select: none;
+}
+
+.breadcrumb-arrow {
+  color: #a1a1aa;
+}
+
+.breadcrumb-item {
+  color: #71717a;
+  transition: color 0.15s ease;
+}
+
+.breadcrumb-item.active {
+  color: #09090b;
+  font-weight: 600;
+}
+
+/* ── Dark Theme Overrides for Top Navbar ── */
+[data-theme='dark'] .top-navbar {
+  background-color: #18181b !important;
+  border-color: #27272a !important;
+}
+
+[data-theme='dark'] .sidebar-toggle {
+  color: #a1a1aa !important;
+}
+
+[data-theme='dark'] .sidebar-toggle:hover {
+  background-color: #27272a !important;
+  color: #ffffff !important;
+}
+
+[data-theme='dark'] .navbar-divider {
+  background-color: #27272a !important;
+}
+
+[data-theme='dark'] .breadcrumb-arrow {
+  color: #71717a !important;
+}
+
+[data-theme='dark'] .breadcrumb-item {
+  color: #a1a1aa !important;
+}
+
+[data-theme='dark'] .breadcrumb-item.active {
+  color: #ffffff !important;
+  font-weight: 600;
+}

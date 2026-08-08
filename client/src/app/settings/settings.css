@@ -1,0 +1,488 @@
+/* Settings Layout */
+.settings-layout {
+  display: flex;
+  height: 100vh;
+  background-color: var(--bg-main, #ffffff);
+  transition: background-color 0.2s ease;
+}
+
+.settings-sidebar {
+  width: 240px;
+  background-color: var(--bg-card, #ffffff);
+  border-right: 1px solid var(--border-color, #e4e4e7);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  box-sizing: border-box;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.settings-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  color: var(--text-secondary, #71717a);
+  text-decoration: none;
+  padding: 8px 0;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.settings-back:hover {
+  color: var(--text-primary, #09090b);
+}
+
+.settings-search {
+  display: flex;
+  align-items: center;
+  background-color: #f4f4f5;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 6px 10px;
+  margin-bottom: 20px;
+}
+
+.settings-search input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 0.875rem;
+  margin-left: 6px;
+  width: 100%;
+  color: var(--text-primary, #09090b);
+}
+
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.settings-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  color: var(--text-secondary, #71717a);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.settings-nav-item.active {
+  background-color: #f4f4f5;
+  color: var(--text-primary, #09090b);
+  font-weight: 600;
+}
+
+.settings-nav-item:hover:not(.active) {
+  background-color: var(--bg-hover, #f4f4f5);
+}
+
+/* Settings Content Wrapper */
+.settings-content-wrapper {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 48px 32px;
+  overflow-y: auto;
+  background-color: var(--bg-main, #ffffff);
+}
+
+.settings-content {
+  width: 100%;
+  max-width: 680px;
+}
+
+.settings-title {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin-bottom: 28px;
+  color: var(--text-primary, #09090b);
+  letter-spacing: -0.02em;
+}
+
+.settings-section {
+  margin-top: 32px;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-primary, #09090b);
+}
+
+/* Settings Cards & Rows */
+.settings-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e4e4e7);
+  border-radius: 12px;
+  padding: 0;
+  margin-bottom: 32px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.settings-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border-color, #f4f4f5);
+  min-height: 64px;
+  box-sizing: border-box;
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
+
+.settings-row-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.settings-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary, #09090b);
+}
+
+.settings-description {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #71717a);
+}
+
+.settings-description-gray {
+  font-size: 0.875rem;
+  color: #71717a;
+  font-weight: 500;
+}
+
+.settings-value {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.875rem;
+  color: var(--text-primary, #09090b);
+}
+
+.email-value-group {
+  gap: 8px;
+}
+
+.email-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #18181b;
+}
+
+.icon-btn-ghost-edit {
+  background: transparent;
+  border: none;
+  color: #71717a;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+}
+
+.icon-btn-ghost-edit:hover {
+  color: #09090b;
+}
+
+/* Avatar Image Container */
+.profile-avatar-wrapper {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e4e4e7;
+  transition: opacity 0.15s ease;
+}
+
+.profile-avatar-wrapper:hover {
+  opacity: 0.85;
+}
+
+.profile-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-uploading-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+}
+
+/* Pill Input Boxes */
+.settings-pill-input {
+  background-color: #f4f4f5;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.875rem;
+  color: #3f3f46;
+  font-weight: 500;
+  outline: none;
+  width: 260px;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+}
+
+.settings-pill-input:focus {
+  background-color: #ffffff;
+  border-color: var(--primary-color, #8b5cf6);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+}
+
+/* Action Buttons */
+.leave-workspace-btn {
+  background-color: #fef2f2;
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 0.8125rem;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.leave-workspace-btn:hover {
+  background-color: #fee2e2;
+}
+
+.settings-message-toast {
+  padding: 10px 16px;
+  background-color: #f4f4f5;
+  color: #09090b;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Theme & Color Settings Options */
+.settings-theme-select {
+  background-color: #f4f4f5;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 8px 14px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #3f3f46;
+  outline: none;
+  cursor: pointer;
+}
+
+.theme-options-grid,
+.color-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+  padding: 0 24px 24px 24px;
+}
+
+.theme-option-card,
+.color-option-card {
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e4e4e7);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.theme-option-card:hover,
+.color-option-card:hover {
+  border-color: #a1a1aa;
+}
+
+.theme-option-card.selected,
+.color-option-card.selected {
+  border-color: var(--primary-color, #8b5cf6);
+  background-color: rgba(139, 92, 246, 0.04);
+}
+
+.theme-card-header,
+.color-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.theme-card-icon-title,
+.color-swatch-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.theme-card-title,
+.color-name-text {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary, #09090b);
+}
+
+.theme-card-desc,
+.color-card-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary, #71717a);
+  line-height: 1.4;
+}
+
+.swatch-square,
+.color-swatch-box {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: inline-block;
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+/* ── Dark Mode Overrides for Settings Page ── */
+[data-theme='dark'] .settings-layout {
+  background-color: #09090b !important;
+  color: #f4f4f5 !important;
+}
+
+[data-theme='dark'] .settings-sidebar {
+  background-color: #18181b !important;
+  border-color: #27272a !important;
+}
+
+[data-theme='dark'] .settings-back {
+  color: #a1a1aa !important;
+}
+
+[data-theme='dark'] .settings-back:hover {
+  color: #ffffff !important;
+}
+
+[data-theme='dark'] .settings-search {
+  background-color: #27272a !important;
+  border-color: #3f3f46 !important;
+  color: #f4f4f5 !important;
+}
+
+[data-theme='dark'] .settings-search input {
+  color: #f4f4f5 !important;
+}
+
+[data-theme='dark'] .settings-nav-item {
+  color: #a1a1aa !important;
+}
+
+[data-theme='dark'] .settings-nav-item.active {
+  background-color: #27272a !important;
+  color: #ffffff !important;
+}
+
+[data-theme='dark'] .settings-nav-item:hover:not(.active) {
+  background-color: #27272a !important;
+  color: #ffffff !important;
+}
+
+[data-theme='dark'] .settings-content-wrapper {
+  background-color: #09090b !important;
+}
+
+[data-theme='dark'] .settings-title,
+[data-theme='dark'] .section-title,
+[data-theme='dark'] .settings-label {
+  color: #ffffff !important;
+}
+
+[data-theme='dark'] .settings-description,
+[data-theme='dark'] .settings-description-gray {
+  color: #a1a1aa !important;
+}
+
+[data-theme='dark'] .email-text {
+  color: #f4f4f5 !important;
+}
+
+[data-theme='dark'] .icon-btn-ghost-edit {
+  color: #a1a1aa !important;
+}
+
+[data-theme='dark'] .icon-btn-ghost-edit:hover {
+  color: #ffffff !important;
+}
+
+[data-theme='dark'] .settings-card {
+  background-color: #18181b !important;
+  border-color: #27272a !important;
+  color: #f4f4f5 !important;
+}
+
+[data-theme='dark'] .settings-row {
+  border-color: #27272a !important;
+}
+
+[data-theme='dark'] .profile-avatar-wrapper {
+  border-color: #27272a !important;
+}
+
+[data-theme='dark'] .settings-pill-input {
+  background-color: #27272a !important;
+  border-color: #3f3f46 !important;
+  color: #f4f4f5 !important;
+}
+
+[data-theme='dark'] .settings-pill-input:focus {
+  background-color: #18181b !important;
+  border-color: var(--primary-color, #8b5cf6) !important;
+}
+
+[data-theme='dark'] .leave-workspace-btn {
+  background-color: #450a0a !important;
+  color: #fca5a5 !important;
+}
+
+[data-theme='dark'] .leave-workspace-btn:hover {
+  background-color: #7f1d1d !important;
+}
+
+[data-theme='dark'] .settings-message-toast {
+  background-color: #27272a !important;
+  color: #f4f4f5 !important;
+}
+
+[data-theme='dark'] .settings-theme-select {
+  background-color: #27272a !important;
+  border-color: #3f3f46 !important;
+  color: #f4f4f5 !important;
+}
+
+[data-theme='dark'] .theme-option-card,
+[data-theme='dark'] .color-option-card {
+  background-color: #27272a !important;
+  border-color: #3f3f46 !important;
+}
+
+[data-theme='dark'] .theme-option-card.selected,
+[data-theme='dark'] .color-option-card.selected {
+  border-color: var(--primary-color, #8b5cf6) !important;
+  background-color: #18181b !important;
+}
