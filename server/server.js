@@ -41,21 +41,8 @@ const apiLimiter = rateLimit({
 });
 
 // Security Middleware 3: CORS Strict Trusted Domain Controls
-const allowedOrigins = [
-  process.env.CLIENT_URL,
-  'https://todo-saa-s.vercel.app',
-  'http://localhost:3000'
-].filter(Boolean);
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.some(o => origin.startsWith(o))) {
-      return callback(null, true);
-    }
-    return callback(null, true);
-  },
-  credentials: true
-}));
+const clientOrigin = process.env.CLIENT_URL || 'http://localhost:3000';
+app.use(cors({ origin: clientOrigin, credentials: true }));
 
 // Body parsing
 app.use(express.json({ limit: '10kb' })); // Limit body payload size
