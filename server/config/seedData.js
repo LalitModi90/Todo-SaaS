@@ -7,17 +7,9 @@ const bcrypt = require('bcryptjs');
 
 const seedInitialData = async () => {
   try {
-    const taskCount = await Task.countDocuments();
-    if (taskCount > 0) {
-      console.log('Database already has task data. Skipping initial seed.');
-      return;
-    }
-
-    console.log('Seeding initial mock data into database...');
-
     const defaultPasswordHash = await bcrypt.hash('123456', 10);
 
-    // 1. Users
+    // 1. Always ensure demo/seed users exist and have valid passwords set
     const usersData = [
       { name: 'Lalit Modi', email: 'lalitmodi7878065@gmail.com', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=Lalit+Modi' },
       { name: 'Ankit Dutta', email: 'ankit@gmail.com', avatar: 'https://api.dicebear.com/7.x/initials/svg?seed=Ankit' },
@@ -36,12 +28,20 @@ const seedInitialData = async () => {
           avatar: u.avatar,
           isVerified: true
         });
-      } else {
+      } else if (!userDoc.password) {
         userDoc.password = defaultPasswordHash;
         await userDoc.save();
       }
       users[u.name] = userDoc;
     }
+
+    const taskCount = await Task.countDocuments();
+    if (taskCount > 0) {
+      console.log('Database already has task data. Demo user passwords verified.');
+      return;
+    }
+
+    console.log('Seeding initial mock data into database...');
 
     // 2. Workspace
     let workspaceDoc = await Workspace.findOne({ name: 'Lalit Workspace' });

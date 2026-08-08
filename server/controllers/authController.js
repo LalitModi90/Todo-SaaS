@@ -12,6 +12,17 @@ const register = async (req, res) => {
     
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      if (!existingUser.password) {
+        const salt = await bcrypt.genSalt(10);
+        existingUser.password = await bcrypt.hash(password, salt);
+        if (name) existingUser.name = name;
+        await existingUser.save();
+        const token = generateToken(existingUser._id);
+        return res.status(200).json({
+          token,
+          user: { id: existingUser._id, name: existingUser.name, email: existingUser.email, avatar: existingUser.avatar }
+        });
+      }
       return res.status(400).json({ error: 'User already exists' });
     }
 
