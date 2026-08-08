@@ -96,16 +96,7 @@ app.use('/api/workspaces', workspaceRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/auth', googleAuthRoutes);   // Google OAuth redirect routes
 
-const seedInitialData = require('./config/seedData');
 
-// Seed endpoint (Protected in production)
-app.get('/api/seed', async (req, res) => {
-  if (process.env.NODE_ENV === 'production') {
-    return res.status(403).json({ error: 'Forbidden in production' });
-  }
-  await seedInitialData();
-  res.json({ message: 'Database seed executed successfully' });
-});
 
 // Error Handler Middleware
 app.use(errorHandler);

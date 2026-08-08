@@ -68,6 +68,8 @@
   border-radius: 8px;
   cursor: pointer;
   margin-bottom: 24px;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .user-profile:hover {
@@ -78,6 +80,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
+  overflow: hidden;
+  flex: 1;
 }
 
 .user-avatar {
@@ -95,6 +100,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .section-header {

@@ -152,7 +152,6 @@ const seedInitialData = async () => {
       if (!taskDoc) {
         taskDoc = await Task.create(t);
 
-        // Add comment for task1 if applicable
         if (t.title === 'Write API Documentation') {
           const commentDoc = await Comment.create({
             message: 'Documentation updated',

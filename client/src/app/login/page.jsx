@@ -57,22 +57,12 @@ export default function LoginPage() {
   // ── Handlers ──
   const handleGuestLogin = () => loginAsGuest();
 
-  const handleGoogleClick = async () => {
+  const handleGoogleClick = () => {
     setError('');
-    setInfo('Waking up backend server... Connecting to Google (~20-40s on Render free tier)');
     setLoading(true);
 
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://todo-saas.onrender.com/api';
     const backendBase = apiUrl.replace(/\/api\/?$/, '');
-
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
-      await fetch(backendBase, { mode: 'no-cors', signal: controller.signal }).catch(() => {});
-      clearTimeout(timeoutId);
-    } catch (e) {
-      // Proceed even if ping times out
-    }
 
     window.location.href = `${backendBase}/auth/google`;
   };

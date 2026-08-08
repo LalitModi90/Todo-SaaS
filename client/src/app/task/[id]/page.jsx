@@ -188,6 +188,7 @@ export default function TaskDetailPage() {
     if (!id) return;
     try {
       setLoading(true);
+      setAccessDenied(false);
       const data = await getTaskById(id);
       setTask(data);
       if (data && data.viewsCount) {
@@ -204,6 +205,9 @@ export default function TaskDetailPage() {
       }
     } catch (err) {
       console.error('Error fetching task details:', err);
+      if (err.response?.status === 403) {
+        setAccessDenied(true);
+      }
     } finally {
       setLoading(false);
     }

@@ -16,8 +16,7 @@ const getAccessQuery = async (req) => {
     { creator: req.user.id },
     { assignedTo: req.user.id },
     { 'membersWithRoles.user': req.user.id },
-    { isPublic: true },
-    { creator: { $exists: false } }
+    { isPublic: true }
   ];
 
   if (userName) {
@@ -90,7 +89,22 @@ const getTaskById = async (req, res) => {
           { path: 'replies', populate: { path: 'userId', select: 'name email avatar' } }
         ]
       });
+
     if (!task) return res.status(404).json({ error: 'Task not found' });
+
+    // Privacy Access Control: Check if task is private (isPublic === false)
+    if (task.isPublic === false) {
+      const currentUserId = req.user?.id ? req.user.id.toString() : null;
+      const isCreator = task.creator && (task.creator._id ? task.creator._id.toString() : task.creator.toString()) === currentUserId;
+      const isAssigned = task.assignedTo && task.assignedTo.some(u => (u._id ? u._id.toString() : u.toString()) === currentUserId);
+      const isMember = task.membersWithRoles && task.membersWithRoles.some(m => m.user && (m.user._id ? m.user._id.toString() : m.user.toString()) === currentUserId);
+      const isWithoutCreator = !task.creator;
+
+      if (!isCreator && !isAssigned && !isMember && !isWithoutCreator) {
+        return res.status(403).json({ error: 'Access denied. This task is private.' });
+      }
+    }
+
     res.status(200).json(task);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -133,7 +147,34 @@ const createTask = async (req, res) => {
 
 const updateTask = async (req, res) => {
   try {
+    const existingTask = await Task.findById(req.params.id);
+    if (!existingTask) return res.status(404).json({ error: 'Task not found' });
+
+    const currentUserId = req.user?.id ? req.user.id.toString() : null;
+    const creatorId = existingTask.creator ? existingTask.creator.toString() : null;
+    const isCreator = creatorId && creatorId === currentUserId;
+    const isAssigned = existingTask.assignedTo && existingTask.assignedTo.some(u => (u._id ? u._id.toString() : u.toString()) === currentUserId);
+    const isMember = existingTask.membersWithRoles && existingTask.membersWithRoles.some(m => m.user && (m.user._id ? m.user._id.toString() : m.user.toString()) === currentUserId);
+    const canModify = !creatorId || isCreator || isAssigned || isMember;
+
     const { title, description, status, priority, dueDate, startDate, endDate, assignedTo, labels, subtasks, isLocked, membersWithRoles, isPublic } = req.body;
+
+    // 1. Check visibility toggle permission
+    if (isPublic !== undefined && isPublic !== existingTask.isPublic) {
+      if (!isCreator && creatorId) {
+        return res.status(403).json({ error: 'Only the task creator can change task visibility (Public/Private).' });
+      }
+    }
+
+    // 2. Enforce edit permission for Public and Private tasks
+    if (!canModify) {
+      if (existingTask.isPublic) {
+        return res.status(403).json({ error: 'Public tasks are view-only. Only the task creator or assigned members can edit this task.' });
+      } else {
+        return res.status(403).json({ error: 'Access denied. You do not have permission to edit this private task.' });
+      }
+    }
+
     const updateData = { title, description, status, priority, dueDate, startDate, endDate, assignedTo, labels, subtasks, isLocked, membersWithRoles, isPublic };
 
     if (isLocked !== undefined) {
@@ -163,7 +204,6 @@ const updateTask = async (req, res) => {
         ]
       });
 
-    if (!updatedTask) return res.status(404).json({ error: 'Task not found' });
     res.status(200).json(updatedTask);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -172,8 +212,21 @@ const updateTask = async (req, res) => {
 
 const deleteTask = async (req, res) => {
   try {
-    const deletedTask = await Task.findByIdAndDelete(req.params.id);
-    if (!deletedTask) return res.status(404).json({ error: 'Task not found' });
+    const existingTask = await Task.findById(req.params.id);
+    if (!existingTask) return res.status(404).json({ error: 'Task not found' });
+
+    const currentUserId = req.user?.id ? req.user.id.toString() : null;
+    const creatorId = existingTask.creator ? existingTask.creator.toString() : null;
+    const isCreator = creatorId && creatorId === currentUserId;
+    const isAssigned = existingTask.assignedTo && existingTask.assignedTo.some(u => (u._id ? u._id.toString() : u.toString()) === currentUserId);
+    const isMember = existingTask.membersWithRoles && existingTask.membersWithRoles.some(m => m.user && (m.user._id ? m.user._id.toString() : m.user.toString()) === currentUserId);
+    const canModify = !creatorId || isCreator || isAssigned || isMember;
+
+    if (!canModify) {
+      return res.status(403).json({ error: 'Access denied. Only the task creator or assigned members can delete this task.' });
+    }
+
+    await Task.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: 'Task deleted' });
   } catch (error) {
     res.status(500).json({ error: error.message });
