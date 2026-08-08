@@ -109,6 +109,7 @@ export default function TaskDetailPage() {
 
   const [task, setTask]                 = useState(null);
   const [loading, setLoading]           = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
   const [priorityOpen, setPriorityOpen] = useState(false);
   const [statusOpen, setStatusOpen]     = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -234,6 +235,35 @@ export default function TaskDetailPage() {
     }
   };
 
+  const isUserTaskEditor = () => {
+    if (!task) return true;
+
+    const ownerId = task.creator?._id || task.creator || task.lockedBy?._id || task.lockedBy;
+    const currentUserId = user?.id || user?._id;
+    const currentUserName = (user?.name || '').toLowerCase();
+
+    // 1. Owner / Creator always has full access
+    if (ownerId && currentUserId && ownerId.toString() === currentUserId.toString()) {
+      return true;
+    }
+
+    // 2. Check assigned members with roles
+    const members = task.membersWithRoles || [];
+    const assignedMember = members.find(m => 
+      (m.user && (m.user._id === currentUserId || m.user === currentUserId)) ||
+      (m.name && m.name.toLowerCase() === currentUserName)
+    );
+
+    if (assignedMember && (assignedMember.role === 'Assignee' || assignedMember.role === 'Reviewer')) {
+      return true;
+    }
+
+    const isAssigned = task.assignedTo && task.assignedTo.some(u => (u._id ? u._id.toString() : u.toString()) === currentUserId);
+    if (isAssigned) return true;
+
+    return false;
+  };
+
   const checkCanModifyTask = (requiredRole = 'Assignee') => {
     if (!task) return true;
 
@@ -267,8 +297,8 @@ export default function TaskDetailPage() {
     }
 
     // 3. If Public or Locked, block unauthorized edits by non-owners
+    const ownerName = task.creator?.name || 'the task owner';
     if (isPublic) {
-      const ownerName = task.creator?.name || 'the task owner';
       triggerToast(`⚠️ View-Only Access: Public tasks can only be modified by ${ownerName} or assigned members.`);
       return false;
     }
@@ -279,7 +309,8 @@ export default function TaskDetailPage() {
       return false;
     }
 
-    return true;
+    triggerToast(`⚠️ View-Only Access: This task can only be modified by ${ownerName} or assigned members.`);
+    return false;
   };
 
   // ── Action Buttons Functions ──
@@ -359,15 +390,33 @@ export default function TaskDetailPage() {
     if (!checkCanModifyTask()) return;
     if (!newLabelInput.trim()) return;
     try {
-      const currentLabels = task.labels || ['Research', 'Design', 'Development', 'Testing', 'Deployment'];
-      const updatedLabels = [...currentLabels, newLabelInput.trim()];
+      const currentLabels = task.labels || [];
+      const newLabels = newLabelInput
+        .split(',')
+        .map(l => l.trim())
+        .filter(Boolean);
+
+      const updatedLabels = Array.from(new Set([...currentLabels, ...newLabels]));
       const updated = await updateTask(id, { labels: updatedLabels });
       setTask(updated);
       setNewLabelInput('');
       setShowLabelModal(false);
-      triggerToast(`Label "${newLabelInput.trim()}" created successfully!`);
+      triggerToast(`Added ${newLabels.length} label(s): ${newLabels.join(', ')}`);
     } catch (err) {
       console.error('Error creating label:', err);
+    }
+  };
+
+  const handleDeleteLabel = async (labelToDelete) => {
+    if (!checkCanModifyTask()) return;
+    try {
+      const currentLabels = task.labels || [];
+      const updatedLabels = currentLabels.filter(l => l !== labelToDelete);
+      const updated = await updateTask(id, { labels: updatedLabels });
+      setTask(updated);
+      triggerToast(`Label "${labelToDelete}" removed`);
+    } catch (err) {
+      console.error('Error deleting label:', err);
     }
   };
 
@@ -627,13 +676,35 @@ export default function TaskDetailPage() {
     );
   }
 
+  if (accessDenied) {
+    return (
+      <div className="dashboard-layout" style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden' }}>
+        <Sidebar />
+        <div className="main-content-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <Navbar />
+          <div style={{ padding: '4rem 2rem', textAlign: 'center', color: '#f4f4f5' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔒</div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Private Task - Access Denied</h2>
+            <p style={{ color: '#a1a1aa', fontSize: '0.875rem', marginBottom: '1.5rem' }}>This task is private and can only be viewed by its creator or assigned members.</p>
+            <button className="btn-dark" onClick={() => router.push('/tasks')}>Return to Tasks</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!task) {
     return (
       <div className="dashboard-layout" style={{ display: 'flex', width: '100vw', height: '100vh', overflow: 'hidden' }}>
         <Sidebar />
         <div className="main-content-wrapper" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           <Navbar />
-          <div style={{ padding: '3rem', textAlign: 'center', color: '#71717a' }}>Task not found.</div>
+          <div style={{ padding: '4rem 2rem', textAlign: 'center', color: '#f4f4f5' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📋</div>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Task Not Found</h2>
+            <p style={{ color: '#a1a1aa', fontSize: '0.875rem', marginBottom: '1.5rem' }}>The requested task does not exist or has been removed.</p>
+            <button className="btn-dark" onClick={() => router.push('/tasks')}>Return to Tasks</button>
+          </div>
         </div>
       </div>
     );
@@ -674,10 +745,10 @@ export default function TaskDetailPage() {
                 <button className="modal-close-btn" onClick={() => setShowLabelModal(false)}>✕</button>
               </div>
               <form onSubmit={handleCreateLabelSubmit} className="modal-card-body">
-                <label className="modal-field-label">Label Name</label>
+                <label className="modal-field-label">Label Name(s) <span style={{ fontSize: '0.75rem', color: '#9ca3af', fontWeight: 400 }}>(Separated by commas)</span></label>
                 <input
                   type="text"
-                  placeholder="e.g. Frontend, API, Urgent..."
+                  placeholder="e.g. Frontend, API, Urgent, Design"
                   value={newLabelInput}
                   onChange={(e) => setNewLabelInput(e.target.value)}
                   className="modal-text-input"
@@ -1000,8 +1071,8 @@ export default function TaskDetailPage() {
                     <span className="property-label">Properties</span>
                     <div className="property-pills">
                       <span className="pill-badge">
-                        <span className="role-letter">A</span>
-                        Designer
+                        <span className="role-letter">{(assigneeName || 'A')[0].toUpperCase()}</span>
+                        {assigneeName}
                       </span>
                       <span className="pill-badge red-badge">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -1013,12 +1084,16 @@ export default function TaskDetailPage() {
                   <div className="property-row">
                     <span className="property-label">Labels</span>
                     <div className="property-pills">
-                      {(task.labels && task.labels.length > 0 ? task.labels : ['Research', 'Design', 'Development', 'Testing', 'Deployment']).map((lbl, idx) => (
-                        <span key={idx} className="label-tag">
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                          {lbl}
-                        </span>
-                      ))}
+                      {task.labels && task.labels.length > 0 ? (
+                        task.labels.map((lbl, idx) => (
+                          <span key={idx} className="label-tag">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                            {lbl}
+                          </span>
+                        ))
+                      ) : (
+                        <span style={{ color: '#9ca3af', fontSize: '0.8125rem', fontStyle: 'italic' }}>No labels</span>
+                      )}
                     </div>
                   </div>
 
@@ -1567,21 +1642,34 @@ export default function TaskDetailPage() {
                       {/* Labels Row */}
                       <div className="detail-row">
                         <span className="detail-label">Labels</span>
-                        <div className="detail-value-clickable" onClick={() => setShowLabelModal(true)}>
+                        <div className="detail-value-clickable">
                           {task?.labels && task.labels.length > 0 ? (
-                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
                               {task.labels.map((lbl, idx) => (
-                                <span key={idx} className="label-tag">
+                                <span key={idx} className="label-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-                                  {lbl}
+                                  <span>{lbl}</span>
+                                  <span 
+                                    onClick={(e) => { e.stopPropagation(); handleDeleteLabel(lbl); }}
+                                    style={{ cursor: 'pointer', opacity: 0.6, fontSize: '0.65rem', paddingLeft: '2px' }}
+                                    title="Remove label"
+                                  >
+                                    ✕
+                                  </span>
                                 </span>
                               ))}
+                              <span 
+                                onClick={() => setShowLabelModal(true)}
+                                style={{ fontSize: '0.75rem', color: '#6366f1', marginLeft: '4px', fontWeight: 600, cursor: 'pointer' }}
+                              >
+                                + Add
+                              </span>
                             </div>
                           ) : (
-                            <>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }} onClick={() => setShowLabelModal(true)}>
                               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
                               <span className="detail-action-text">Add labels</span>
-                            </>
+                            </div>
                           )}
                         </div>
                       </div>

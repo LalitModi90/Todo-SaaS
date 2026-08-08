@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
@@ -65,11 +67,16 @@ const googleCallback = async (req, res) => {
     // Upsert user in MongoDB
     let user = await User.findOne({ email });
     if (!user) {
+      const randomPassword = crypto.randomBytes(16).toString('hex');
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(randomPassword, salt);
+
       user = await User.create({
         name: name || email.split('@')[0],
         email,
         avatar: picture || '',
         googleId,
+        password: hashedPassword,
         isVerified: true,
       });
     } else {

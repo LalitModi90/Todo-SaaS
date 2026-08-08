@@ -61,7 +61,8 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://todo-saas.onrender.com/api';
+    const isLocal = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+    const apiUrl = isLocal ? 'http://localhost:4000/api' : (process.env.NEXT_PUBLIC_API_URL || 'https://todo-saas.onrender.com/api');
     const backendBase = apiUrl.replace(/\/api\/?$/, '');
 
     window.location.href = `${backendBase}/auth/google`;

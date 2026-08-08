@@ -151,11 +151,13 @@ const updateTask = async (req, res) => {
     if (!existingTask) return res.status(404).json({ error: 'Task not found' });
 
     const currentUserId = req.user?.id ? req.user.id.toString() : null;
-    const creatorId = existingTask.creator ? existingTask.creator.toString() : null;
-    const isCreator = creatorId && creatorId === currentUserId;
-    const isAssigned = existingTask.assignedTo && existingTask.assignedTo.some(u => (u._id ? u._id.toString() : u.toString()) === currentUserId);
-    const isMember = existingTask.membersWithRoles && existingTask.membersWithRoles.some(m => m.user && (m.user._id ? m.user._id.toString() : m.user.toString()) === currentUserId);
-    const canModify = !creatorId || isCreator || isAssigned || isMember;
+    const creatorId = existingTask.creator ? (existingTask.creator._id ? existingTask.creator._id.toString() : existingTask.creator.toString()) : null;
+    const isCreator = !!(creatorId && currentUserId && creatorId === currentUserId);
+    const isAssigned = !!(existingTask.assignedTo && existingTask.assignedTo.some(u => (u._id ? u._id.toString() : u.toString()) === currentUserId));
+    const isMember = !!(existingTask.membersWithRoles && existingTask.membersWithRoles.some(m => m.user && (m.user._id ? m.user._id.toString() : m.user.toString()) === currentUserId));
+    
+    const hasAssignments = (existingTask.assignedTo && existingTask.assignedTo.length > 0) || (existingTask.membersWithRoles && existingTask.membersWithRoles.length > 0);
+    const canModify = creatorId ? (isCreator || isAssigned || isMember) : (hasAssignments ? (isAssigned || isMember) : true);
 
     const { title, description, status, priority, dueDate, startDate, endDate, assignedTo, labels, subtasks, isLocked, membersWithRoles, isPublic } = req.body;
 
@@ -216,11 +218,13 @@ const deleteTask = async (req, res) => {
     if (!existingTask) return res.status(404).json({ error: 'Task not found' });
 
     const currentUserId = req.user?.id ? req.user.id.toString() : null;
-    const creatorId = existingTask.creator ? existingTask.creator.toString() : null;
-    const isCreator = creatorId && creatorId === currentUserId;
-    const isAssigned = existingTask.assignedTo && existingTask.assignedTo.some(u => (u._id ? u._id.toString() : u.toString()) === currentUserId);
-    const isMember = existingTask.membersWithRoles && existingTask.membersWithRoles.some(m => m.user && (m.user._id ? m.user._id.toString() : m.user.toString()) === currentUserId);
-    const canModify = !creatorId || isCreator || isAssigned || isMember;
+    const creatorId = existingTask.creator ? (existingTask.creator._id ? existingTask.creator._id.toString() : existingTask.creator.toString()) : null;
+    const isCreator = !!(creatorId && currentUserId && creatorId === currentUserId);
+    const isAssigned = !!(existingTask.assignedTo && existingTask.assignedTo.some(u => (u._id ? u._id.toString() : u.toString()) === currentUserId));
+    const isMember = !!(existingTask.membersWithRoles && existingTask.membersWithRoles.some(m => m.user && (m.user._id ? m.user._id.toString() : m.user.toString()) === currentUserId));
+    
+    const hasAssignments = (existingTask.assignedTo && existingTask.assignedTo.length > 0) || (existingTask.membersWithRoles && existingTask.membersWithRoles.length > 0);
+    const canModify = creatorId ? (isCreator || isAssigned || isMember) : (hasAssignments ? (isAssigned || isMember) : true);
 
     if (!canModify) {
       return res.status(403).json({ error: 'Access denied. Only the task creator or assigned members can delete this task.' });
