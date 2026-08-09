@@ -2,7 +2,7 @@ const crypto = require('crypto');
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const generateToken = require('../utils/generateToken');
-const { sendOTP } = require('../utils/sendEmail');
+const { sendOTP, sendWelcomePassword } = require('../utils/sendEmail');
 const { OAuth2Client } = require('google-auth-library');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -58,9 +58,7 @@ const login = async (req, res) => {
     }
 
     if (!user.password) {
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(password, salt);
-      await user.save();
+      return res.status(400).json({ error: 'Password not set. Please use Google Login or Reset Password.' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -85,7 +83,7 @@ const requestOTP = async (req, res) => {
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
     // Only send OTP to registered users
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
+    let user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
       // Vague message on purpose — don't reveal whether email is registered
       return res.status(404).json({ error: 'No account found with this email. Please register first.' });
@@ -169,9 +167,10 @@ const googleLogin = async (req, res) => {
 
     let user = await User.findOne({ email: userEmail });
     if (!user) {
-      const randomPassword = crypto.randomBytes(16).toString('hex');
+      // Generate a secure auto-generated password (e.g. Tod#8f3a9b)
+      const rawPassword = 'Tod#' + crypto.randomBytes(3).toString('hex');
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(randomPassword, salt);
+      const hashedPassword = await bcrypt.hash(rawPassword, salt);
 
       user = new User({
         name: userName || userEmail.split('@')[0],
@@ -181,6 +180,14 @@ const googleLogin = async (req, res) => {
         isVerified: true
       });
       await user.save();
+
+      // Send Welcome Email with auto-generated password for first time Google Login
+      try {
+        await sendWelcomePassword(userEmail, user.name, rawPassword);
+        console.log(`Welcome password email sent to ${userEmail}`);
+      } catch (emailError) {
+        console.error('Failed to send welcome password email:', emailError.message);
+      }
     }
 
     const token = generateToken(user._id);

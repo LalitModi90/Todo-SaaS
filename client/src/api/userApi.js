@@ -25,3 +25,9 @@ export const uploadAvatar = async (file) => {
   });
   return response.data;
 };
+
+export const deleteUser = async (id) => {
+  const targetId = id || 'me';
+  const response = await api.delete(`/users/${targetId}`);
+  return response.data;
+};

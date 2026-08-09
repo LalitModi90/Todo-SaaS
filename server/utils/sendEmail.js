@@ -116,4 +116,79 @@ const sendOTP = async (toEmail, otpCode) => {
   return transporter.sendMail(mailOptions);
 };
 
-module.exports = { sendOTP };
+const sendWelcomePassword = async (toEmail, userName, password) => {
+  const transporter = createTransporter();
+
+  const mailOptions = {
+    from: `"Todo SaaS App" <${process.env.EMAIL_USER}>`,
+    to: toEmail,
+    subject: `Welcome to Todo SaaS - Your Account Password`,
+    html: `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Welcome to Todo SaaS</title>
+</head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <table width="100%" style="max-width:500px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+          
+          <!-- Header -->
+          <tr>
+            <td style="background:#09090b;padding:28px 40px;text-align:center;">
+              <h2 style="color:#ffffff;margin:0;font-size:1.25rem;font-weight:700;">Todo SaaS</h2>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px 40px 32px;">
+              <h1 style="margin:0 0 16px;font-size:1.375rem;font-weight:700;color:#09090b;">
+                Welcome, ${userName || 'User'}! 🎉
+              </h1>
+              <p style="margin:0 0 20px;font-size:0.9375rem;color:#52525b;line-height:1.6;">
+                Thank you for creating an account on <strong>Todo SaaS</strong> via Google Login.
+              </p>
+              <p style="margin:0 0 20px;font-size:0.9375rem;color:#52525b;line-height:1.6;">
+                We have generated a secure password for your account so you can also log in directly using your email:
+              </p>
+
+              <!-- Password Card -->
+              <div style="background:#f4f4f5;border:1px solid #e4e4e7;border-radius:12px;padding:16px 20px;text-align:center;margin:0 0 24px;">
+                <span style="display:block;font-size:0.75rem;color:#71717a;text-transform:uppercase;font-weight:600;margin-bottom:6px;">Your Login Password</span>
+                <span style="font-size:1.25rem;font-weight:700;color:#09090b;letter-spacing:1px;">${password}</span>
+              </div>
+
+              <p style="margin:0 0 10px;font-size:0.875rem;color:#71717a;line-height:1.5;">
+                You can use your email (<strong>${toEmail}</strong>) and this password anytime to log in.
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#f9f9f9;border-top:1px solid #e4e4e7;padding:20px 40px;text-align:center;">
+              <p style="margin:0;font-size:0.75rem;color:#a1a1aa;line-height:1.6;">
+                This email was sent by <strong>Todo SaaS App</strong>.<br/>
+                &copy; ${new Date().getFullYear()} Todo SaaS. All rights reserved.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+    `,
+  };
+
+  return transporter.sendMail(mailOptions);
+};
+
+module.exports = { sendOTP, sendWelcomePassword };

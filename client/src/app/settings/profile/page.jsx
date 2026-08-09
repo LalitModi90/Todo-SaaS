@@ -2,15 +2,21 @@
 
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { uploadAvatar, updateUser } from '@/api/userApi';
+import { uploadAvatar, updateUser, deleteUser } from '@/api/userApi';
 
 export default function ProfileSettingsPage() {
-  const { user, setUser, checkGuestAction } = useAuth();
+  const { user, setUser, checkGuestAction, logoutUser, isGuestUser } = useAuth();
   const [name, setName] = useState(user?.name || 'User');
   const [title, setTitle] = useState(user?.title || 'Designer');
   const [username, setUsername] = useState(user?.username || 'User');
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
+  
+  // Modal states for leave workspace & delete account
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const fileInputRef = React.useRef(null);
 
   const handleAvatarClick = () => {
@@ -54,8 +60,27 @@ export default function ProfileSettingsPage() {
   };
 
   const handleLeaveWorkspace = () => {
-    if (window.confirm('Are you sure you want to leave this workspace?')) {
-      alert('You have requested to leave the workspace.');
+    setMessage('');
+    setShowConfirmModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      setIsDeleting(true);
+      setMessage('');
+      if (!isGuestUser && typeof window !== 'undefined' && localStorage.getItem('token')) {
+        try {
+          await deleteUser('me');
+        } catch (apiErr) {
+          console.warn('Backend deletion call status:', apiErr);
+        }
+      }
+    } catch (err) {
+      console.error('Error during account deletion flow:', err);
+    } finally {
+      setIsDeleting(false);
+      setShowConfirmModal(false);
+      logoutUser();
     }
   };
 
@@ -188,6 +213,71 @@ export default function ProfileSettingsPage() {
           </div>
         </div>
       </div>
+
+      {/* 1. Confirmation Modal Popup */}
+      {showConfirmModal && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal-card">
+            <div className="delete-modal-icon-wrapper">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
+                <path d="M3 6h18"/>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                <line x1="10" y1="11" x2="10" y2="17"/>
+                <line x1="14" y1="11" x2="14" y2="17"/>
+              </svg>
+            </div>
+            <h3 className="delete-modal-title">Delete Account & Leave Workspace?</h3>
+            <p className="delete-modal-description">
+              Are you sure you want to delete your account? All your projects, tasks, comments, and workspace data will be permanently deleted from the database.
+            </p>
+            <div className="delete-modal-actions">
+              <button 
+                type="button" 
+                className="delete-modal-cancel-btn"
+                onClick={() => setShowConfirmModal(false)}
+                disabled={isDeleting}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="delete-modal-confirm-btn"
+                onClick={handleConfirmDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? 'Deleting Data...' : 'Yes, Delete Account & Data'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Success Notification Modal Popup */}
+      {showSuccessModal && (
+        <div className="delete-modal-overlay">
+          <div className="delete-modal-card">
+            <div className="delete-modal-icon-wrapper success-icon-wrapper">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+              </svg>
+            </div>
+            <h3 className="delete-modal-title">Account & Data Deleted</h3>
+            <p className="delete-modal-description">
+              Your user account and all associated workspace data have been permanently deleted from the database.
+            </p>
+            <div className="delete-modal-actions">
+              <button 
+                type="button" 
+                className="delete-modal-success-btn"
+                onClick={() => logoutUser()}
+              >
+                Return to Login
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

@@ -51,10 +51,16 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logoutUser = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('isGuest');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('isGuest');
+    }
     setUser(null);
-    router.push('/login');
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    } else {
+      router.push('/login');
+    }
   };
 
   const checkGuestAction = (actionName = "use this feature") => {
