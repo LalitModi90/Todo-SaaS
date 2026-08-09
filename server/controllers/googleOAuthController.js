@@ -3,9 +3,10 @@ const bcrypt = require('bcryptjs');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
+const { sendWelcomePassword } = require('../utils/sendEmail');
 
 const getOAuthClient = (req) => {
-  const host = req ? `${req.protocol}://${req.get('host')}` : 'https://todo-saas.onrender.com';
+  const host = req ? `${req.protocol}://${req.get('host')}` : (process.env.BACKEND_URL || 'https://todo-saas.onrender.com');
   const redirectUri = process.env.GOOGLE_REDIRECT_URI || `${host}/auth/google/callback`;
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -67,9 +68,9 @@ const googleCallback = async (req, res) => {
     // Upsert user in MongoDB
     let user = await User.findOne({ email });
     if (!user) {
-      const randomPassword = crypto.randomBytes(16).toString('hex');
+      const rawPassword = 'Tod#' + crypto.randomBytes(3).toString('hex');
       const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(randomPassword, salt);
+      const hashedPassword = await bcrypt.hash(rawPassword, salt);
 
       user = await User.create({
         name: name || email.split('@')[0],
@@ -79,6 +80,14 @@ const googleCallback = async (req, res) => {
         password: hashedPassword,
         isVerified: true,
       });
+
+      // Send Welcome Email with auto-generated password for first-time Google OAuth Sign Up
+      try {
+        await sendWelcomePassword(email, user.name, rawPassword);
+        console.log(`Welcome password email sent to ${email}`);
+      } catch (emailError) {
+        console.error('Failed to send welcome password email in Google Callback:', emailError.message);
+      }
     } else {
       // Sync avatar and googleId if not set
       if (!user.googleId) user.googleId = googleId;
