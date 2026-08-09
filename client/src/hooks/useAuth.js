@@ -20,6 +20,14 @@ export const AuthProvider = ({ children }) => {
   const pathname = usePathname();
 
   useEffect(() => {
+    // 1. Silent background ping to wake up backend server as soon as website opens
+    if (typeof window !== 'undefined') {
+      const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      const backendUrl = isLocal ? 'http://localhost:4000' : (process.env.NEXT_PUBLIC_API_URL ? process.env.NEXT_PUBLIC_API_URL.replace(/\/api\/?$/, '') : 'https://todo-saas.onrender.com');
+      fetch(backendUrl, { method: 'GET', mode: 'cors' }).catch(() => {});
+    }
+
+    // 2. Auth initialization
     const initAuth = async () => {
       if (typeof window !== 'undefined') {
         const token = localStorage.getItem('token');
